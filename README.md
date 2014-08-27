@@ -9,6 +9,11 @@ In this "game" you have to produce the longest possible sequence of moves of a c
 
 The program shows all possible moves from your currently occupied square.
 
+#File structure
+
+* index.html - HTML GUI and minimalstic coupling to javascript engine
+* knightTour.js - knightTour javascript engine
+
 #Copyright
 
 Created by [Aleksejus Kononovicius](http://kononovicius.lt). Licensed under [Creative Commons Attribution-NonCommercial license](http://creativecommons.org/licenses/by-nc/4.0/) terms.
