@@ -11,4 +11,4 @@ The program shows all possible moves from your currently occupied square.
 
 #Copyright
 
-Created by [Aleksejus Kononovicius](http://kononovicius.lt). Based on [Knight's Tour](http://en.wikipedia.org/wiki/Knight%27s_tour). Licensed under [Creative Commons Attribution-NonCommercial license](http://creativecommons.org/licenses/by-nc/4.0/) terms.
+Created by [Aleksejus Kononovicius](http://kononovicius.lt). Licensed under [Creative Commons Attribution-NonCommercial license](http://creativecommons.org/licenses/by-nc/4.0/) terms.
