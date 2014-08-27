@@ -17,6 +17,7 @@ knightTour.prototype.gameBoardColumnClass="col";//css class for gameboard rows
 knightTour.prototype.cellClass="cell";//css class for all cells
 knightTour.prototype.allowedCellClass="allowed";//css class for allowed cells
 knightTour.prototype.autoMoveCellClass="automoved";//css class for automoved
+knightTour.prototype.currentCellClass="current";//css class for current cell
 // messaging interface
 knightTour.prototype.messageInterfaceId="log";//id of div containing messages
 knightTour.prototype.clearMessageInterface=function() {$("#"+this.messageInterfaceId).text("").css("display","none");}
@@ -62,7 +63,7 @@ knightTour.prototype.allowCell=function(x,y) {
 	this.allowedCells++;
 }
 knightTour.prototype.isEmpty=function(x,y) {return this.isCellVal(x,y,-1);}
-knightTour.prototype.emptyCell=function(x,y) {this.setCellValue(x,y,-1);}
+knightTour.prototype.emptyCell=function(x,y) {this.setCellValue(x,y,-1);this.setCellText(x,y,"");}
 knightTour.prototype.isCellVal=function(x,y,v) {return (this.fieldArr[y][x]==v);}
 knightTour.prototype.setCellValue=function(x,y,v) {this.fieldArr[y][x]=v;}
 knightTour.prototype.makeMoveTo=function(x,y) {
@@ -70,7 +71,51 @@ knightTour.prototype.makeMoveTo=function(x,y) {
 	this.lastPos=[x,y];
 	this.setCellValue(x,y,this.curId);
 	this.setCellText(x,y,this.curId);
+	this.removeClass(this.currentCellClass);
+	this.addCellClass(x,y,this.currentCellClass);
 	this.applyMovePattern(x,y);
+}
+knightTour.prototype.undo=function() {
+	this.clearMessageInterface();
+	if(this.curId==1) {
+		this.initialize();
+		return ;
+	}
+	var tmpAMove=this.wantsAutoMove;
+	this.wantsAutoMove=false;
+	var movePattern=this.obtainMovePattern(this.lastPos[0],this.lastPos[1]);
+	this.curId--;
+	this.removeClass(this.currentCellClass);
+	this.emptyCell(this.lastPos[0],this.lastPos[1]);
+	var undoCell=false;
+	for(var i=0;i<movePattern.length && undoCell===false;i++) {
+		if(this.isCellVal(movePattern[i][0],movePattern[i][1],this.curId)) undoCell=movePattern[i];
+	}
+	this.lastPos=undoCell;
+	this.addCellClass(undoCell[0],undoCell[1],this.currentCellClass);
+	this.applyMovePattern(undoCell[0],undoCell[1]);
+	this.highLightCells();
+	this.wantsAutoMove=tmpAMove;
+}
+knightTour.prototype.obtainMovePattern=function(x,y) {
+	var rez=[];
+	//  left-forward
+	if(1<x && 0<y) rez.push([x-2,y-1]);
+	//  right-forward
+	if(1<x && y<this.rankY-1) rez.push([x-2,y+1]);
+	//  left-back
+	if(x<this.rankX-2 && 0<y) rez.push([x+2,y-1]);
+	//  right-back
+	if(x<this.rankX-2 && y<this.rankY-1) rez.push([x+2,y+1]);
+	//  forward-left
+	if(0<x && 1<y) rez.push([x-1,y-2]);
+	//  forward-right
+	if(x<this.rankX-1 && 1<y) rez.push([x+1,y-2]);
+	//  left-back
+	if(0<x && y<this.rankY-2) rez.push([x-1,y+2]);
+	//  right-back
+	if(x<this.rankX-1 && y<this.rankY-2) rez.push([x+1,y+2]);
+	return rez;
 }
 knightTour.prototype.applyMovePattern=function(x,y) {
 	// forbid all possible
@@ -79,27 +124,16 @@ knightTour.prototype.applyMovePattern=function(x,y) {
 			if(this.isAllowed(xi,yi)) this.emptyCell(xi,yi);
 		}
 	}
-	this.allowedCells=0;
 	// allow based on pattern
-	//  left-forward
-	if(1<x && 0<y && this.isEmpty(x-2,y-1)) this.allowCell(x-2,y-1);
-	//  right-forward
-	if(1<x && y<this.rankY-1 && this.isEmpty(x-2,y+1)) this.allowCell(x-2,y+1);
-	//  left-back
-	if(x<this.rankX-2 && 0<y && this.isEmpty(x+2,y-1)) this.allowCell(x+2,y-1);
-	//  right-back
-	if(x<this.rankX-2 && y<this.rankY-1 && this.isEmpty(x+2,y+1)) this.allowCell(x+2,y+1);
-	//  forward-left
-	if(0<x && 1<y && this.isEmpty(x-1,y-2)) this.allowCell(x-1,y-2);
-	//  forward-right
-	if(x<this.rankX-1 && 1<y && this.isEmpty(x+1,y-2)) this.allowCell(x+1,y-2);
-	//  left-back
-	if(0<x && y<this.rankY-2 && this.isEmpty(x-1,y+2)) this.allowCell(x-1,y+2);
-	//  right-back
-	if(x<this.rankX-1 && y<this.rankY-2 && this.isEmpty(x+1,y+2)) this.allowCell(x+1,y+2);
-	// no cells allowed
+	this.allowedCells=0;
+	var movePattern=this.obtainMovePattern(x,y);
+	for(var i=0;i<movePattern.length;i++) {
+		if(this.isEmpty(movePattern[i][0],movePattern[i][1])) this.allowCell(movePattern[i][0],movePattern[i][1]);
+	}
+	// if no cells allowed
 	if(this.allowedCells==0) this.gameOver();
-	if(this.allowedCells==1) this.autoMove();
+	// if automove possible
+	else if(this.allowedCells==1) this.autoMove();
 }
 knightTour.prototype.autoMove=function() {
 	if(!this.wantsAutoMove) return ;
@@ -117,6 +151,9 @@ knightTour.prototype.autoMove=function() {
 knightTour.prototype.addCellClass=function(x,y,c) {
 	$(this.getCellId(x,y)).addClass(c);
 }
+knightTour.prototype.removeClass=function(c) {
+	$("#"+this.gameBoardId+" ."+c).removeClass(c);
+}
 knightTour.prototype.setCellText=function(x,y,t) {
 	$(this.getCellId(x,y)).text(t);
 }
@@ -124,19 +161,21 @@ knightTour.prototype.getCellId=function(x,y) {
 	return "#c"+y+"x"+x;
 }
 knightTour.prototype.onCellClick=function(id) {
-	$("#"+this.gameBoardId+" ."+this.autoMoveCellClass).removeClass(this.autoMoveCellClass);
+	this.removeClass(this.autoMoveCellClass);
 	var coords=id.substr(1);
 	coords=coords.split("x");
-	coords[0]=parseInt(coords[0]);
-	coords[1]=parseInt(coords[1]);
+	coords[0]=parseInt(coords[0]);//y
+	coords[1]=parseInt(coords[1]);//x
 	if(this.isAllowed(coords[1],coords[0])) {
 		this.makeMoveTo(coords[1],coords[0]);
 		this.highLightCells();
+	} else if(this.lastPos[0]==coords[1] && this.lastPos[1]==coords[0]) {
+		this.undo();
 	}
 	return false;
 }
 knightTour.prototype.highLightCells=function() {
-	$("#"+this.gameBoardId+" ."+this.allowedCellClass).removeClass(this.allowedCellClass);
+	this.removeClass(this.allowedCellClass);
 	for(var yi=0;yi<this.rankY;yi++) {
 		for(var xi=0;xi<this.rankX;xi++) {
 			if(this.isAllowed(xi,yi)) this.addCellClass(xi,yi,this.allowedCellClass);
@@ -148,22 +187,10 @@ knightTour.prototype.isClosedTour=function() {
 		var x=this.lastPos[0];
 		var y=this.lastPos[1];
 		// check based on pattern
-		//  left-forward
-		if(1<x && 0<y && this.isCellVal(x-2,y-1,1)) return true;
-		//  right-forward
-		if(1<x && y<this.rankY-1 && this.isCellVal(x-2,y+1,1)) return true;
-		//  left-back
-		if(x<this.rankX-2 && 0<y && this.isCellVal(x+2,y-1,1)) return true;
-		//  right-back
-		if(x<this.rankX-2 && y<this.rankY-1 && this.isCellVal(x+2,y+1,1)) return true;
-		//  forward-left
-		if(0<x && 1<y && this.isCellVal(x-1,y-2,1)) return true;
-		//  forward-right
-		if(x<this.rankX-1 && 1<y && this.isCellVal(x+1,y-2,1)) return true;
-		//  left-back
-		if(0<x && y<this.rankY-2 && this.isCellVal(x-1,y+2,1)) return true;
-		//  right-back
-		if(x<this.rankX-1 && y<this.rankY-2 && this.isCellVal(x+1,y+2,1)) return true;
+		var movePattern=this.obtainMovePattern(x,y);
+		for(var i=0;i<movePattern.length;i++) {
+			if(this.isCellVal(movePattern[i][0],movePattern[i][1],1)) return true;
+		}
 	}
 	return false;
 }
