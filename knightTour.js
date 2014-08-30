@@ -9,7 +9,7 @@ knightTour.prototype.curId=0;//number of the last move made
 knightTour.prototype.allowedSquares=0;//number of squares allowed to move into after last move
 knightTour.prototype.lastPos=[];//coordinates of last move
 knightTour.prototype.wantsAutoMove=true;//use auto move?
-knightTour.prototype.figureMoves=[2,1];//movement shape of the piece used (knight - (2,1))
+knightTour.prototype.figureMoves=[2,1];//movement shape of the piece used (knight - (2,1), cammel - (3,1), zebra - (3,2))
 // gameboard interface
 knightTour.prototype.gameBoardId="game-board";//id of div designated to be gameboard
 knightTour.prototype.gameBoardRowClass="row";//css class for gameboard rows
