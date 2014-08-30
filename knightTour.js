@@ -109,7 +109,7 @@ knightTour.prototype.obtainMovePattern=function(x,y) {
 knightTour.prototype.obtainSingleMove=function(x,y,d) {
 	//right-most bit determines how many squares are moved
 	// on x and y coordinates
-	var moves=this.figureMoves;
+	var moves=[this.figureMoves[0],this.figureMoves[1]];
 	if(d % 2==0) moves=[moves[1],moves[0]];
 	//second right-most bit determines if y coordinate is
 	// increased or decreased
