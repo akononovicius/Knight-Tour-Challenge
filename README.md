@@ -13,7 +13,3 @@ The program highlights currently occupied square in pale blue, while possible mo
 
 * index.html - HTML GUI and minimalstic coupling to javascript engine
 * knightTour.js - knightTour javascript engine
-
-# Copyright
-
-Created by [Aleksejus Kononovicius](http://kononovicius.lt). Licensed under [Creative Commons Attribution-NonCommercial license](http://creativecommons.org/licenses/by-nc/4.0/) terms.
